@@ -1,0 +1,211 @@
+#' @title
+#' @author
+#' @description
+#' @details
+#' @keywords
+
+
+library(shinydashboard)
+library(shiny)
+library(plotly)
+library(dashboardthemes)
+
+library(readxl)
+library(dplyr)
+library(DT)
+library(scales)
+library(ggplot2)
+library(tidyverse)
+
+
+# Remove variables from environment.
+rm(list = ls())
+
+# Source functions.
+function_files = list.files(path = "functions", full.names = TRUE, recursive = TRUE)
+
+for (file in function_files) {
+  source(file, encoding = "UTF-8")
+}
+
+# Source modules.
+module_files = list.files(path = "modules", full.names = TRUE, recursive = TRUE)
+
+for (file in module_files) {
+  source(file, encoding = "UTF-8")
+}
+
+
+#BASES DE DATOS
+indicador_6 <- read_excel("indicadores_181021.xlsx", sheet = "Ind 6")
+
+
+indicador_6 %>%
+  mutate(MES=factor(MES,
+                    levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+                             "Septiembre", "Octubre","Noviembre", "Diciembre"))) %>%   
+group_by(AÑO, MES) %>% 
+  summarise(`MUJERES VÍCTIMAS DE VIOLENCIA DE GÉNERO`=sum(`TOTAL DE MUJERES VÍCTIMAS DE VIOLENCIA DE GÉNERO ATENDIDAS`),
+            `ORDENES DE PROTECCIÓN`=sum(`TOTAL DE MUJERES CANALIZADAS PARA OTORGAMIENTO DE ORDENES DE PROTECCIÓN`),
+            `MEDIDAS DE PROTECCIÓN`=sum(`TOTAL DE MUJERES CANALIZADAS PARA OTORGAMIENTO DE MEDIDAS DE PROTECCIÓN`),
+            `LÍNEA BASE`=scales::percent(sum((`ORDENES DE PROTECCIÓN`+`MEDIDAS DE PROTECCIÓN`)/`MUJERES VÍCTIMAS DE VIOLENCIA DE GÉNERO`), 0.1)) -> tabla_6
+
+tabla_6 %>% 
+  pivot_longer(names_to = "CLASIFICACIÓN",
+               values_to = "TOTAL",
+               cols=c("MUJERES VÍCTIMAS DE VIOLENCIA DE GÉNERO",
+                      "ORDENES DE PROTECCIÓN",
+                      "MEDIDAS DE PROTECCIÓN"))-> t6
+
+t6 %>% 
+  ggplot() +
+  aes(x = MES, y = TOTAL, colour = CLASIFICACIÓN, group=CLASIFICACIÓN) +
+  geom_line(size = 1.5) + geom_point(size = 3)+
+  labs(x="", y="", title = "Indicador 6",
+       color = "CLASIFICACIÓN") +
+  theme_minimal()+   
+  facet_wrap(vars(AÑO))+
+  scale_y_continuous(labels = scales::comma) +
+  scale_color_manual(
+    values = c(
+      `MUJERES VÍCTIMAS DE VIOLENCIA DE GÉNERO` = "#D98CBC",
+      `ORDENES DE PROTECCIÓN` = "#C91682",
+      `MEDIDAS DE PROTECCIÓN` = "#7E3794"))+
+  theme(legend.position = "bottom")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))-> gr6
+
+
+
+
+
+
+
+ui <- dashboardPage(
+  title = "Indicadores de la AVGM de Jalisco",
+  skin = "purple",
+  
+  dashboardHeader(title = tags$p("Indicadores AVGM de Jalisco",
+                  style = "color = #fffff; font-size: 2rem"),
+  tags$li(class = "dropdown",
+          tags$style(".main-header {max-height: 60px}"),
+          tags$style(".main-header .logo {height: 60px;}"),
+          tags$style(".sidebar-toggle {height: 60px; padding-top: 20px !important;}"),#
+          tags$style(".navbar {min-height:60px !important}"),
+          tags$style(".dropdown {height: 60px; padding-top: 10px !important;}") #2do ancho
+  ), titleWidth = "25%"),
+  
+  
+  dashboardSidebar(
+      tags$style(".left-side, .main-sidebar {padding-top: 103px}"),
+      sidebarMenu(
+        menuItem("Inicio",tabName = "inicio", icon = icon("home")),
+        menuItem("Objetivo 1", tabName ="objetivo1", icon = icon("th-list")),
+        menuItem("Objetivo 2", tabName ="objetivo2", icon = icon("th-list")),
+        menuItem("Objetivo 3", tabName ="objetivo3", icon = icon("th-list")),
+        menuItem("Objetivo 4", tabName ="objetivo4", icon = icon("th-list")),
+        menuItem("Objetivo 5", tabName ="objetivo5", icon = icon("th-list")),
+        menuItem("Objetivo 6", tabName ="objetivo6", icon = icon("th-list")),
+        menuItem("Objetivos generales", tabName ="objetivosgenerales", icon = icon("chart-line"))
+      )),
+
+  dashboardBody(
+    tabItems(
+      tabItem(tabName =  "inicio",
+            fluidRow(width = 6,
+              box(
+                title = "¡Bienvenida!",
+                status = "danger",
+                solidHeader = TRUE,
+                
+                tags$h2("¿De qué va esto?"),
+                tags$p("Este es un tablero montado para el taller de Rladies acerca de cómo hacer tableros en shiny, particularmente usando la paquetería de shinydashboards."),
+                tags$br(),
+                
+                tags$h3("Datos de ejemplo"),
+                tags$p("Para esto, los datos que se usaron son acerca de los postes del C5 en la CDMX que salen del", 
+                       tags$a(href = "https://datos.cdmx.gob.mx/dataset/ubicacion-acceso-gratuito-internet-wifi-c5", " portal de datos abiertos "),
+                       tags$p("de la CDMX.")),
+                
+                tags$br(),
+                tags$p('"En esta base de datos se pueden consultar las ubicaciones de los postes del Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano (C5) de la Ciudad de México que cuentan con cámaras de seguridad, botón de pánico, altavoz, el tipo de poste y la georreferenciación; así como el estatus actual de la conexión a internet inalámbrico."')
+              ),
+              box(
+                width = 6, 
+                height = "100%",
+                id = "tabla",
+                title = "Ubicación de los postes",
+                dataTableOutput(
+                  "tabla", 
+                  width = "100%", 
+                  height = "100%"
+                )
+              )
+            )),
+    
+    
+    tabItem(tabName = "objetivo1",
+            tags$style(".info-box-content p { font-size: 2.5rem; }"),
+            
+            fluidRow(width=10, 
+                     h2(align="center","Indicador 6:", style="color:black"), #br(),
+                     h4(align="center", "Porcentaje de mujeres víctimas de violencia por razones de género atendidas y 
+                     canalizadas para otorgamiento de orden de protección y/o medidas de protección.", style="color:gray"),
+              box(
+                  width=12,  
+                     valueBox("Indicador 2021", "60.5%",icon=icon("chart-area"),color="fuchsia"),
+                     valueBox("Valor maximo", "75.6%", icon=icon("arrow-circle-up"), color="purple"),
+                     valueBox("Valor minimo", "46.3%", icon=icon("arrow-circle-down"), color="maroon")
+                  ),
+              
+              #### Info basica #####
+              infoBoxOutput(width = 2, "total"),
+              infoBoxOutput(width = 2, "inactivos"),
+              infoBoxOutput(width = 2, "botones"),
+              infoBoxOutput(width = 2, "alertas")),
+            
+            box(width = 6, 
+                height = "100%",
+                id = "table",
+              title = "Calaculo del indicador mensual (Histórico).",
+              
+              dataTableOutput("table", width = "100%", height = "100%")),
+            
+            tabBox(
+              width = 6,
+              height = "100%",
+              id = "plots",
+              tabPanel(title = "Gráfica",
+                       plotlyOutput("ui_633838455674882")),
+              tabPanel(title = "Mapa")
+              
+              
+    )
+  )
+))
+)
+
+
+
+
+server <- function(input, output, session) {
+  output$ui_633838455674882 <- renderPlotly({
+    ggplotly(gr6) %>% 
+      layout(title = "Indicador 6",
+             legend = list(orientation = 'v', 
+                           x = 0, y = -1), 
+             xaxis = list(side = "bottom"),legend = list(side="bottom"))
+  })
+  
+  
+  output$table <- renderDataTable({
+    tabla_6 %>% datatable(extensions = 'Buttons',
+                          options = list(dom = 'Blfrtip',
+                                         buttons = c('copy', 'excel', 'print'),
+                                         lengthMenu = list(c(8,15,25,50,-1),
+                                                           c(8,15,25,50,"All"))))
+    
+  })
+}
+
+runApp(list(ui=ui, server=server))
+
