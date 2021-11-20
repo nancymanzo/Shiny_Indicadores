@@ -5,7 +5,6 @@ library(dashboardthemes)
 library(shinythemes)
 library(shinybusy)
 
-library(readxl)
 library(dplyr)
 library(DT)
 library(scales)
@@ -14,7 +13,9 @@ library(tidyverse)
 
 
 
-indicador_6<-read.csv("indicador_6.csv")
+indicador_6 <- read.csv("indicador_6.csv")
+indicador_7 <- read.csv("indicador_7.csv")
+
 
 indicador_6 %>%
   mutate(MES=factor(MES,
@@ -56,7 +57,6 @@ ggplot(t6) +
 
 
 
-indicador_7<-read.csv("indicador_7.csv")
 
 
 indicador_7 %>%
@@ -98,7 +98,16 @@ t7 %>%
 
 
 
-
+customLogo <- shinyDashboardLogoDIY(
+  boldText = "R-Ladies"
+  ,mainText = "Guadalajara"
+  ,textSize = 20
+  ,badgeText  = icon("chart-line")
+  ,badgeTextColor = "white"
+  ,badgeTextSize = 2
+  ,badgeBackColor = "#751b7a"
+  ,badgeBorderRadius = 3
+)
 
 
 
@@ -120,29 +129,89 @@ ui <- dashboardPage(
   dashboardSidebar(
     tags$style(".left-side, .main-sidebar {padding-top: 103px}"),
     sidebarMenu(
-      menuItem("Inicio",tabName = "inicio", icon = icon("home")),
-      menuItem("Objetivo 1", tabName ="objetivo1", icon = icon("th-list")),
       
-      menuItem("Objetivo 2", tabName ="objetivo2", icon = icon("th-list")),
-               
+      menuItem(
+        tabName = "Ini",
+        text = "Inicio"
+          #icon = icon("angle-double-right")
+        )),
+    
+      menuItem(
+        tabName = "obj1",
+        text = "Objetivo 1",
+        menuSubItem(
+          tabName = "ind1",
+          text = "Indicador 1"
+          #icon = icon("angle-double-right")
+        )),
+      menuItem(
+        tabName = "obj2",
+        text = "Objetivo 2",
+        menuSubItem(
+          tabName = "Ind6",
+          text = "Indicador 6"
+          #icon = icon("angle-double-right")
+        ),
+        menuSubItem(
+          tabName = "Ind7",
+          text = "indicador 7"
+          #icon = icon("angle-double-right")
+        )
+      ),
+      menuItem(
+        tabName = "obj3",
+        text = "Objetivo 3",
+        menuSubItem(
+          tabName = "ind8",
+          text = "Indicador 8"
+          #icon = icon("angle-double-right")
+        ),
+        menuSubItem(
+          tabName = "ind9",
+          text = "Indicador 9"
+          #icon = icon("angle-double-right")
+        )
+      ),
+    menuItem(
+      tabName = "obj4",
+      text = "Objetivo 4",
+      menuSubItem(
+        tabName = "ind40",
+        text = "Indicador 40"
+        #icon = icon("angle-double-right")
+      )),
+      
+    menuItem(
+      tabName = "obj_gen",
+      text = "Objetivo general",
+      menuSubItem(
+        tabName = "objetivogeneral",
+        text = "Indicador 42"
+        #icon = icon("angle-double-right")
+      )) 
+    ),
+      # menuItem("Inicio",tabName = "inicio", icon = icon("home")),
+      # menuItem("Objetivo 1", tabName ="objetivo1", icon = icon("th-list")),
+      # 
+      # menuItem("Objetivo 2", tabName ="objetivo2", icon = icon("th-list")),
+      #          
                  # menuSubItem("Ind6", 
                  #             tabName = "Ind6", icon("circle")),
                  # 
                  # menuSubItem("Ind7", 
                  #             tabName = "Ind7", icon("circle"))),
         
-      menuItem("Objetivo 3", tabName ="objetivo3", icon = icon("th-list")),
-      menuItem("Objetivo 4", tabName ="objetivo4", icon = icon("th-list")),
-      menuItem("Objetivo 5", tabName ="objetivo5", icon = icon("th-list")),
-      menuItem("Objetivo 6", tabName ="objetivo6", icon = icon("th-list")),
-      menuItem("Objetivos generales", tabName ="objetivosgenerales", icon = icon("chart-line"))
+      # menuItem("Objetivo 3", tabName ="objetivo3", icon = icon("th-list")),
+      # menuItem("Objetivo 4", tabName ="objetivo4", icon = icon("th-list")),
+      # menuItem("Objetivo 5", tabName ="objetivo5", icon = icon("th-list")),
+      # menuItem("Objetivo 6", tabName ="objetivo6", icon = icon("th-list")),
+      # menuItem("Objetivos generales", tabName ="objetivosgenerales", icon = icon("chart-line"))
       
-      
-    )),
+     
   
   dashboardBody(
     tabItems(
-      tabItem(tabName =  "inicio",
+      tabItem(tabName =  "Ini",
               fluidRow(width = 6,
                        box(
                          title = "INDICADORES DE LA AVGM",
@@ -162,7 +231,7 @@ ui <- dashboardPage(
               )),
       
       
-      tabItem(tabName = "objetivo2",
+      tabItem(tabName = "Ind6", 
               tags$style(".info-box-content p { font-size: 2.5rem; }"),
               
               fluidRow(width=10, 
@@ -173,84 +242,48 @@ ui <- dashboardPage(
                          valueBox("Indicador 2021", "60.5%",icon=icon("chart-area"),color="fuchsia"),
                          valueBox("Indicador 2020", "55.3%", icon=icon("arrow-circle-down"), color="purple"),
                          valueBox("Indicador 2019", "61.0%", icon=icon("arrow-circle-up"), color="maroon")),
-                
-                       
-             box(width = 6, 
+              box(width = 6, 
                  # height = "100%",
                  # id = "table",
                  # title = "Calculo del indicador mensual (Histórico).",
-                 dataTableOutput(outputId = "table")),
-
-              
+                 dataTableOutput(outputId = "table", width = "100%", height = "100%")),
               tabBox(
                 width = 6,
                 height = "100%",
-                tabPanel(title = "Gráfica", plotlyOutput("gr6")),
-                tabPanel(title = "Mapa")), 
+                tabPanel(title = "Gráfica", plotlyOutput("gr6",  width ="100%", height = "100%")),
+                tabPanel(title = "Mapa")))), 
              
-             hr(), 
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),            
-             hr(), 
-             hr(), 
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(), 
-             hr(), 
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(), 
-             hr(), 
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             hr(),
-             
-             
-             h4(""),
-          tabItem(tabName =  "objetivo2",
-             fluidRow(width=10, 
-                      h2(align="center","Indicador 7:", style="color:black"), 
-                      h4(align="center", "Porcentaje de mujeres víctimas de violencia por razones de género que solicitaron y obtuvieron orden y/o medida de protección.", style="color:gray"),
-                      box(
-                        width=12,  
-                        valueBox("Indicador 2021", "60.5%",icon=icon("chart-area"),color="fuchsia"),
-                        valueBox("Indicador 2020", "55.3%", icon=icon("arrow-circle-down"), color="purple"),
-                        valueBox("Indicador 2019", "61.0%", icon=icon("arrow-circle-up"), color="maroon")),
-                      
-                      
-                      box(width = 6, 
-                          # height = "100%",
-                          # id = "table",
-                          # title = "Calculo del indicador mensual (Histórico).",
-                          dataTableOutput(outputId = "table7")),
-                      
-                      
-                      tabBox(
-                        width = 6,
-                        height = "100%",
-                        tabPanel(title = "Gráfica", plotlyOutput("gr7")),
-                        tabPanel(title = "Mapa")),
-                      
-      ))
-   ))
-))
 
-)
+      
+      tabItem(tabName =  "Ind7", 
+         fluidRow(width=10, 
+                  h2(align="center","Indicador 7:", style="color:black"), 
+                  h4(align="center", "Porcentaje de mujeres víctimas de violencia por razones de género que solicitaron y obtuvieron orden y/o medida de protección.", style="color:gray"),
+                  box(
+                    width=12,  
+                    valueBox("Indicador 2021", "60.5%",icon=icon("chart-area"),color="fuchsia"),
+                    valueBox("Indicador 2020", "55.3%", icon=icon("arrow-circle-down"), color="purple"),
+                    valueBox("Indicador 2019", "61.0%", icon=icon("arrow-circle-up"), color="maroon")),
+                  
+                  
+                  box(width = 6, 
+                      # height = "100%",
+                      # id = "table",
+                      # title = "Calculo del indicador mensual (Histórico).",
+                      dataTableOutput(outputId = "table7",
+                                      width = "80%", 
+                                      height = "100%")),
+                  tabBox(
+                    width = 6,
+                    height = "100%",
+                    tabPanel(title = "Gráfica", plotlyOutput("gr7", width = "100%", height = "100%")),
+                    tabPanel(title = "Mapa"))))
+                  
+      ))
+   )
+#))
+
+
 
 
 
@@ -271,8 +304,8 @@ server <- function(input, output) {
       tabla_6 %>% datatable(extensions = 'Buttons',
                             options = list(dom = 'Blfrtip',
                                            buttons = c('copy', 'excel', 'print'),
-                                           lengthMenu = list(c(5,15,25,50,-1),
-                                                             c(5,15,25,50,"All"))))
+                                           lengthMenu = list(c(7,10,15,25,50,-1),
+                                                             c(7,10,15,25,50,"All"))))
       
     })
     
